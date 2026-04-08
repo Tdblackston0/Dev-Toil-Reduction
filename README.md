@@ -111,7 +111,15 @@ dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /nores
 
 If you prefer to install all tools directly on your machine:
 
-1. Install prerequisites (see [Prerequisites](#prerequisites) above)
+**Manual path prerequisites:**
+
+- Node.js **v24+** (includes npm)
+- Git
+- GNU Make (`make`) available in your shell
+- VS Code with GitHub Copilot + Copilot Chat extensions
+- GitHub account with Copilot Business or Enterprise
+
+1. Confirm prerequisites are installed (see [Prerequisites](#prerequisites) above)
 2. Clone your repository:
    ```bash
    git clone https://github.com/<your-username>/<your-repo-name>.git
@@ -121,6 +129,11 @@ If you prefer to install all tools directly on your machine:
    ```bash
    make install
    make build
+   ```
+   If `make` is not available on your machine, use:
+   ```bash
+   cd api && npm install && npm run build
+   cd ../frontend && npm install && npm run build
    ```
 4. Authenticate:
    ```shell
