@@ -1,42 +1,24 @@
 {
-  "dockerComposeFile": [
-    "docker-compose.yml"
-  ],
-  "service": "dev",
-  "forwardPorts": [
-    3000,
-    5137
-  ],
-  "portsAttributes": {
-    "3000": {
-      "label": "API",
-      "onAutoForward": "notify",
-      "visibility": "public"
-    },
-    "5137": {
-      "label": "Frontend",
-      "onAutoForward": "notify"
-    }
-  },
+  "name": "Dev Toil Reduction",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:24-bookworm",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
   "features": {
-    "ghcr.io/devcontainers/features/node:1": {
-      "version": "24"
-    },
-    "ghcr.io/devcontainers/features/azure-cli:1": {},
-    "ghcr.io/devcontainers/features/python:1": {},
-    "ghcr.io/devcontainers/features/github-cli:1": {}
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {
+      "installDirectlyFromGitHubRelease": true,
+      "version": "latest"
+    }
   },
   "customizations": {
     "vscode": {
       "extensions": [
-        "ms-azuretools.vscode-docker",
         "GitHub.copilot",
+        "GitHub.copilot-chat",
+        "ms-vscode.vscode-typescript-next",
+        "ms-azuretools.vscode-docker",
         "ms-vscode.extension-test-runner",
         "vitest.explorer",
-        "ms-vscode.vscode-speech",
-        "Blodwynn.featurehighlight",
         "bierner.markdown-mermaid",
-        "ms-azuretools.vscode-bicep",
         "GitHub.vscode-pull-request-github"
       ],
       "settings": {
@@ -57,10 +39,22 @@
       }
     }
   },
-  "postCreateCommand": "make install && make build",
-  // set the API port to public visibility
-  "postAttachCommand": "gh cs ports visibility 3000:public -c \"$CODESPACE_NAME\"",
-  "shutdownAction": "stopCompose",
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+  "postAttachCommand": "if command -v gh &> /dev/null && [ ! -z \"$CODESPACE_NAME\" ]; then gh cs ports visibility 3000:public -c \"$CODESPACE_NAME\"; fi",
+  "forwardPorts": [3000, 5137],
+  "portsAttributes": {
+    "3000": {
+      "label": "API",
+      "onAutoForward": "notify"
+    },
+    "5137": {
+      "label": "Frontend",
+      "onAutoForward": "notify"
+    }
+  },
+  "remoteEnv": {
+    "NODE_ENV": "development"
+  },
   "hostRequirements": {
     "cpus": 4,
     "memory": "8gb"
