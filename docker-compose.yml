@@ -1,22 +1,6 @@
 version: "3.8"
 
 services:
-  dev:
-    image: mcr.microsoft.com/devcontainers/base:ubuntu
-    command: sleep infinity
-
-    ports:
-      - "3000:3000"
-      - "5137:5137"
-
-    volumes:
-      - type: bind
-        source: /var/run/docker.sock
-        target: /var/run/docker.sock
-      - type: bind
-        source: .
-        target: /workspaces/Dev-Toil-Reduction
-
   api:
     build:
       context: ./api
