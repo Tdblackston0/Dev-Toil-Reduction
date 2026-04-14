@@ -232,7 +232,7 @@ Once reviewed:
 ### Step 12: Verify everything works together
 
 ```bash
-git pull origin main
+git pull origin master
 make test
 make build
 ```
