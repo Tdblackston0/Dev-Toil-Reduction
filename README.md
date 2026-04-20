@@ -100,6 +100,11 @@ A hands-on workshop where enterprise developers tackle real developer toils usin
    ```
 7. ➜ **[Jump to Run Your First App](#run-your-first-app)**
 
+
+> **Podman troubleshooting:** If the container fails to start, verify the Podman socket path matches what VS Code expects. On Linux, set `"dev.containers.dockerSocketPath": "/run/user/1000/podman/podman.sock"` (adjust the UID if yours differs). On macOS/Windows, `podman machine start` handles this automatically.
+
+>**Note:** Your organizaiton may require you to download a CA certification into the Podman Vitual Maching, please visit: https://github.com/containers/podman/blob/main/docs/tutorials/podman-install-certificate-authority.md
+
 **↳ Podman on Windows won't start?** First enable Virtual Machine Platform in PowerShell (Admin):
 ```powershell
 dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart
