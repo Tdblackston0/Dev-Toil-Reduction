@@ -109,7 +109,7 @@ podman machine start
 podman info
 ```
 
-> **Apple Silicon (M1/M2/M3):** Podman automatically uses the native `applehv` virtualization. No extra configuration needed.
+> **Apple Silicon (M1/M2/M3/M4):** Podman automatically uses the native `applehv` virtualization. No extra configuration needed.
 
 </details>
 
@@ -193,10 +193,10 @@ Open VS Code Settings (`Ctrl+,` or `Cmd+,`) and add these settings:
 **Linux only (rootless) — also add:**
 ```json
 {
-  "dev.containers.dockerSocketPath": "/run/user/1000/podman/podman.sock"
+  "dev.containers.dockerSocketPath": "/run/user/<YOUR_UID>/podman/podman.sock"
 }
 ```
-> Replace `1000` with your actual UID. Find it by running `id -u` in your terminal.
+> ⚠️ Replace `<YOUR_UID>` with your actual user ID. Find it by running `id -u` in your terminal (commonly `1000` for the first user).
 
 **Linux only (root mode) — also add:**
 ```json
@@ -583,7 +583,7 @@ By the end of the workshop, you'll have created these reusable assets:
 | **Machine fails to start** (Windows/macOS) | Verify machine is initialized: `podman machine init` then `podman machine start` |
 | **Socket not found** (Linux rootless) | Enable the Podman socket: `systemctl --user enable --now podman.socket` |
 | **Socket not found** (Linux root) | Enable system socket: `sudo systemctl enable --now podman.socket` |
-| **Dev Container fails with Podman** | Verify VS Code setting: `"dev.containers.dockerPath": "podman"`. On Linux, also set: `"dev.containers.dockerSocketPath": "/run/user/$(id -u)/podman/podman.sock"` |
+| **Dev Container fails with Podman** | Verify VS Code setting: `"dev.containers.dockerPath": "podman"`. On Linux rootless, also set `dockerSocketPath` — first run `id -u` to get your UID, then set: `"/run/user/<YOUR_UID>/podman/podman.sock"` |
 | **Permission denied** (Linux) | For rootless, check socket ownership; for SELinux systems, use `:Z` volume suffix |
 | **Corporate proxy issues** | Configure proxy in `~/.config/containers/containers.conf` or inside `podman machine ssh` |
 | **CA certificate errors** | Add custom certs to Podman VM; see [Podman CA Certificate Guide](https://github.com/containers/podman/blob/main/docs/tutorials/podman-install-certificate-authority.md) |
