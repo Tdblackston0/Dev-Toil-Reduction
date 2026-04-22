@@ -81,35 +81,259 @@ A hands-on workshop where enterprise developers tackle real developer toils usin
 
 **~15 min | Enterprise/Docker restricted**
 
-1. Install [Podman](https://podman.io/docs/installation) + [Dev Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) extension
-2. Start Podman:
-   - **macOS/Windows:** `podman machine init && podman machine start`
-   - **Linux:** `systemctl --user enable --now podman.socket`
-3. Configure VS Code: **Settings** → search `dev.containers.dockerPath` → set to `podman`
-4. Clone and open:
-   ```bash
-   git clone https://github.com/<your-username>/<your-repo-name>.git
-   cd <your-repo-name>
-   code .
-   ```
-5. Click **"Reopen in Container"** and wait for build
-6. Authenticate (if prompted):
-   ```shell
-   gh auth login
-   copilot login
-   ```
-7. ➜ **[Jump to Run Your First App](#run-your-first-app)**
+#### Step 1 — Install Podman
 
+| Platform | Install Command / Method |
+|----------|-------------------------|
+| **macOS** | `brew install podman` or download from [podman.io](https://podman.io/docs/installation#macos) |
+| **Windows** | Download installer from [podman.io](https://podman.io/docs/installation#windows) or `winget install RedHat.Podman` |
+| **Linux (Fedora/RHEL)** | `sudo dnf install podman` |
+| **Linux (Ubuntu/Debian)** | `sudo apt-get install podman` |
+| **Linux (Arch)** | `sudo pacman -S podman` |
 
-> **Podman troubleshooting:** If the container fails to start, verify the Podman socket path matches what VS Code expects. On Linux, set `"dev.containers.dockerSocketPath": "/run/user/1000/podman/podman.sock"` (adjust the UID if yours differs). On macOS/Windows, `podman machine start` handles this automatically.
+Also install the [Dev Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) extension in VS Code.
 
->**Note:** Your organizaiton may require you to download a CA certification into the Podman Vitual Maching, please visit: https://github.com/containers/podman/blob/main/docs/tutorials/podman-install-certificate-authority.md
+#### Step 2 — Initialize and Start Podman
 
-**↳ Podman on Windows won't start?** First enable Virtual Machine Platform in PowerShell (Admin):
-```powershell
-dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart
-# Then restart your machine
+<details>
+<summary><strong>macOS</strong></summary>
+
+```bash
+# Initialize a Podman machine (only needed once)
+podman machine init
+
+# Start the machine
+podman machine start
+
+# Verify it's running
+podman info
 ```
+
+> **Apple Silicon (M1/M2/M3):** Podman automatically uses the native `applehv` virtualization. No extra configuration needed.
+
+</details>
+
+<details>
+<summary><strong>Windows</strong></summary>
+
+**Prerequisites:** WSL2 must be enabled. If not already enabled:
+```powershell
+# Run in PowerShell as Administrator
+wsl --install
+
+# Also enable Virtual Machine Platform (if not already)
+dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart
+
+# Restart your machine after these commands
+```
+
+After WSL2 is ready:
+```powershell
+# Initialize a Podman machine (only needed once)
+podman machine init
+
+# Start the machine
+podman machine start
+
+# Verify it's running
+podman info
+```
+
+> **Using WSL2 backend:** Podman on Windows runs inside WSL2. If you encounter permission issues, try running from a WSL2 terminal.
+
+</details>
+
+<details>
+<summary><strong>Linux (Rootless — Recommended)</strong></summary>
+
+```bash
+# Enable and start the Podman socket for your user (rootless)
+systemctl --user enable --now podman.socket
+
+# Verify the socket is running
+systemctl --user status podman.socket
+
+# Find your socket path (you'll need this for VS Code)
+echo "Socket path: /run/user/$(id -u)/podman/podman.sock"
+
+# Verify Podman works
+podman info
+```
+
+> **Note:** Rootless Podman is the recommended mode for most users. It runs containers without root privileges.
+
+</details>
+
+<details>
+<summary><strong>Linux (Root mode — if required by your org)</strong></summary>
+
+```bash
+# Enable and start the system-wide Podman socket
+sudo systemctl enable --now podman.socket
+
+# Verify it's running
+sudo systemctl status podman.socket
+
+# Socket will be at: /run/podman/podman.sock
+```
+
+</details>
+
+#### Step 3 — Configure VS Code for Podman
+
+Open VS Code Settings (`Ctrl+,` or `Cmd+,`) and add these settings:
+
+**All platforms:**
+```json
+{
+  "dev.containers.dockerPath": "podman"
+}
+```
+
+**Linux only (rootless) — also add:**
+```json
+{
+  "dev.containers.dockerSocketPath": "/run/user/1000/podman/podman.sock"
+}
+```
+> Replace `1000` with your actual UID. Find it by running `id -u` in your terminal.
+
+**Linux only (root mode) — also add:**
+```json
+{
+  "dev.containers.dockerSocketPath": "/run/podman/podman.sock"
+}
+```
+
+#### Step 4 — Clone and Open
+
+```bash
+git clone https://github.com/<your-username>/<your-repo-name>.git
+cd <your-repo-name>
+code .
+```
+
+#### Step 5 — Reopen in Container
+
+1. Click **"Reopen in Container"** when prompted  
+   (or press `Ctrl+Shift+P` / `Cmd+Shift+P` → search "Reopen in Container")
+2. Wait for the container build to complete
+
+#### Step 6 — Authenticate
+
+```shell
+gh auth login
+copilot login
+```
+
+➜ **[Jump to Run Your First App](#run-your-first-app)**
+
+---
+
+#### Podman Troubleshooting
+
+<details>
+<summary><strong>Container fails to start</strong></summary>
+
+1. Verify Podman is running:
+   ```bash
+   podman info
+   ```
+2. Check the socket path matches your VS Code settings
+3. On macOS/Windows, ensure the machine is started:
+   ```bash
+   podman machine start
+   ```
+
+</details>
+
+<details>
+<summary><strong>Permission denied errors (Linux)</strong></summary>
+
+For rootless Podman, ensure the socket is enabled for your user:
+```bash
+systemctl --user enable --now podman.socket
+```
+
+If using SELinux, you may need to adjust labels:
+```bash
+# Add :Z suffix for SELinux volume relabeling
+podman run -v ./mydir:/container/path:Z ...
+```
+
+</details>
+
+<details>
+<summary><strong>Podman machine won't start (Windows)</strong></summary>
+
+1. Ensure WSL2 is properly installed and enabled
+2. Check Virtual Machine Platform is enabled:
+   ```powershell
+   # Run as Administrator
+   dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart
+   ```
+3. Restart your machine
+4. Try initializing a fresh machine:
+   ```bash
+   podman machine rm podman-machine-default
+   podman machine init
+   podman machine start
+   ```
+
+</details>
+
+<details>
+<summary><strong>Enterprise proxy or CA certificate issues</strong></summary>
+
+Your organization may require custom CA certificates in the Podman VM.
+
+**macOS/Windows:**
+```bash
+# SSH into the Podman machine
+podman machine ssh
+
+# Add your certificate (inside the VM)
+sudo cp /path/to/your-ca-cert.pem /etc/pki/ca-trust/source/anchors/
+sudo update-ca-trust
+```
+
+**For detailed instructions:** See [Podman CA Certificate Guide](https://github.com/containers/podman/blob/main/docs/tutorials/podman-install-certificate-authority.md)
+
+**Proxy configuration (if behind corporate proxy):**
+```bash
+# Set proxy for Podman machine
+podman machine ssh
+export HTTP_PROXY=http://proxy.example.com:8080
+export HTTPS_PROXY=http://proxy.example.com:8080
+export NO_PROXY=localhost,127.0.0.1
+```
+
+Or add to `~/.config/containers/containers.conf`:
+```ini
+[engine]
+env = ["HTTP_PROXY=http://proxy.example.com:8080", "HTTPS_PROXY=http://proxy.example.com:8080"]
+```
+
+</details>
+
+<details>
+<summary><strong>Using podman-compose (alternative to Docker Compose)</strong></summary>
+
+If your environment doesn't support Docker Compose commands:
+```bash
+# Install podman-compose
+pip install podman-compose
+
+# Or on Fedora/RHEL
+sudo dnf install podman-compose
+
+# Use it like docker-compose
+podman-compose up -d
+```
+
+> **Note:** The Dev Containers extension handles compose automatically when `dockerPath` is set to `podman`.
+
+</details>
 
 <a id="path-manual"></a>
 ### Option D — Manual Setup
@@ -338,6 +562,8 @@ By the end of the workshop, you'll have created these reusable assets:
 
 ## Troubleshooting
 
+### General Issues
+
 | Problem | Fix |
 |---------|-----|
 | Port 3000 / 5137 in use | `npx kill-port 3000 5137` |
@@ -346,10 +572,21 @@ By the end of the workshop, you'll have created these reusable assets:
 | MCP servers not loading | Restart VS Code, check `.vscode/mcp.json` config |
 | Coding Agent not available | Verify org policy enables Coding Agent |
 | CodeQL not running | Enable GitHub Advanced Security in repo settings *(only needed for Lab 07)* |
-| **Podman: Virtual Machine Platform not enabled** (Windows) | Run in **PowerShell as Administrator**: `dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart` then restart your machine |
-| **Podman: Machine fails to start** (Windows/macOS) | Verify machine is initialized: `podman machine init` then `podman machine start` |
-| **Podman: Socket not found** (Linux) | Enable the Podman socket: `systemctl --user enable --now podman.socket` |
-| **Dev Container fails with Podman** | Verify VS Code setting: `"dev.containers.dockerPath": "podman"`. On Linux, also set: `"dev.containers.dockerSocketPath": "/run/user/1000/podman/podman.sock"` (adjust UID: `echo $UID`) |
+
+### Podman Issues
+
+> For detailed Podman troubleshooting with step-by-step solutions, see the [Podman Troubleshooting section](#podman-troubleshooting) in the setup instructions above.
+
+| Problem | Quick Fix |
+|---------|-----------|
+| **WSL2/Virtual Machine Platform not enabled** (Windows) | Run in **PowerShell as Administrator**: `dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart` then `wsl --install`, restart |
+| **Machine fails to start** (Windows/macOS) | Verify machine is initialized: `podman machine init` then `podman machine start` |
+| **Socket not found** (Linux rootless) | Enable the Podman socket: `systemctl --user enable --now podman.socket` |
+| **Socket not found** (Linux root) | Enable system socket: `sudo systemctl enable --now podman.socket` |
+| **Dev Container fails with Podman** | Verify VS Code setting: `"dev.containers.dockerPath": "podman"`. On Linux, also set: `"dev.containers.dockerSocketPath": "/run/user/$(id -u)/podman/podman.sock"` |
+| **Permission denied** (Linux) | For rootless, check socket ownership; for SELinux systems, use `:Z` volume suffix |
+| **Corporate proxy issues** | Configure proxy in `~/.config/containers/containers.conf` or inside `podman machine ssh` |
+| **CA certificate errors** | Add custom certs to Podman VM; see [Podman CA Certificate Guide](https://github.com/containers/podman/blob/main/docs/tutorials/podman-install-certificate-authority.md) |
 
 ---
 
