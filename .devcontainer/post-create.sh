@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Post-create script for dev container
-# Installs dependencies and builds the project
+# Installs dependencies, builds the project, and configures authentication
 
 set -e
 
@@ -11,10 +11,33 @@ echo "🚀 Starting post-create setup..."
 echo "📦 Installing dependencies and building project..."
 make install && make build
 
-echo "✅ Setup complete!"
+# Auto-authenticate GitHub CLI in Codespaces (uses built-in GITHUB_TOKEN)
+if [ -n "$CODESPACE_NAME" ] && [ -n "$GITHUB_TOKEN" ]; then
+  echo "🔐 Auto-authenticating GitHub CLI in Codespaces..."
+  echo "$GITHUB_TOKEN" | gh auth login --with-token 2>/dev/null && \
+    echo "✅ GitHub CLI authenticated automatically" || \
+    echo "⚠️  GitHub CLI auto-auth failed, run: gh auth login"
+fi
+
 echo ""
-echo "Next steps:"
-echo "  1. Authenticate with GitHub: gh auth login"
-echo "  2. Authenticate with Copilot: copilot login"
-echo "  3. Start development: npm run dev (in api and frontend terminals)"
-echo "  4. Open http://localhost:5137 in your browser"
+echo "╔══════════════════════════════════════════════════════════════════╗"
+echo "║                     ✅ SETUP COMPLETE!                           ║"
+echo "╠══════════════════════════════════════════════════════════════════╣"
+echo "║                                                                  ║"
+echo "║  Start both servers with ONE command:                           ║"
+echo "║                                                                  ║"
+echo "║      make dev                                                    ║"
+echo "║                                                                  ║"
+echo "║  Or use VS Code: Ctrl+Shift+B → 'Start Development'             ║"
+echo "║                                                                  ║"
+echo "╠══════════════════════════════════════════════════════════════════╣"
+echo "║  URLs (after starting):                                         ║"
+echo "║    • Frontend:  http://localhost:5137                           ║"
+echo "║    • API Docs:  http://localhost:3000/api-docs/                 ║"
+echo "╚══════════════════════════════════════════════════════════════════╝"
+echo ""
+if [ -z "$CODESPACE_NAME" ]; then
+  echo "💡 If GitHub CLI needs auth, run: gh auth login"
+fi
+echo "💡 Copilot authenticates automatically via VS Code extension"
+echo ""

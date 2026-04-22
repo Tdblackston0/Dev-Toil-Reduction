@@ -8,6 +8,22 @@ A hands-on workshop where enterprise developers tackle real developer toils usin
 
 ---
 
+## 🚀 30-Second Start
+
+| Step | Action |
+|------|--------|
+| **1. Fork** | Click **Fork** at the top of this page |
+| **2. Open** | In your fork: **Code** → **Codespaces** → **Create codespace on main** |
+| **3. Wait** | Setup runs automatically (~3 min) |
+| **4. Start** | Run `make dev` in the terminal |
+| **5. Done!** | Open http://localhost:5137 |
+
+> **That's it!** Copilot extension authenticates automatically. GitHub CLI is auto-configured in Codespaces.
+>
+> ⬇️ Not using Codespaces? See [Other Setup Options](#choose-your-path) below.
+
+---
+
 ## Prerequisites
 
 ### Must-Have **Now**
@@ -33,31 +49,29 @@ A hands-on workshop where enterprise developers tackle real developer toils usin
 
 | Path | Time | For | Recommendation |
 |------|------|-----|-----------------|
-| [**Codespaces**](#path-codespaces) | 5–10 min | In-person workshops, no setup | ⭐ **Start here** |
-| [**Docker Desktop**](#path-docker-desktop) | ~15 min | Already using Docker | ✅ Popular |
+| [**Codespaces**](#path-codespaces) | ~3 min | In-person workshops, no setup | ⭐ **Start here** |
+| [**Docker Desktop**](#path-docker-desktop) | ~10 min | Already using Docker | ✅ Popular |
 | [**Podman**](#path-podman) | ~15 min | Enterprise (Docker restricted) | ✅ Supported |
-| [**Manual**](#path-manual) | ~20 min | Node.js v24+ already installed | Advanced |
+| [**Manual**](#path-manual) | ~15 min | Node.js v24+ already installed | Advanced |
 
 ---
 
 <a id="path-codespaces"></a>
 ### Option A — GitHub Codespaces
 
-**5–10 min | Zero setup**
+**~3 min | Zero setup | ⭐ Recommended**
 
 1. On your fork: **Code** → **Codespaces** → **Create codespace on main**
-2. Wait for setup (auto-installs dependencies and builds)
-3. Authenticate (if prompted):
-   ```shell
-   gh auth login
-   copilot login
-   ```
-4. ➜ **[Jump to Run Your First App](#run-your-first-app)**
+2. Wait for setup (auto-installs dependencies, builds, and configures GitHub CLI)
+3. Run `make dev` to start both servers
+4. ➜ **[Jump to Verify It Works](#verify-it-works)**
+
+> 💡 **Copilot authenticates automatically** via the VS Code extension — no manual login needed.
 
 <a id="path-docker-desktop"></a>
 ### Option B — VS Code + Docker Desktop
 
-**~15 min | Has Docker**
+**~10 min | Has Docker**
 
 1. Install [Dev Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) extension
 2. Start Docker Desktop
@@ -69,381 +83,94 @@ A hands-on workshop where enterprise developers tackle real developer toils usin
    ```
 4. Click **"Reopen in Container"** when prompted (or `Ctrl+Shift+P` → search "Reopen in Container")
 5. Wait for build to finish
-6. Authenticate (if prompted):
-   ```shell
-   gh auth login
-   copilot login
-   ```
-7. ➜ **[Jump to Run Your First App](#run-your-first-app)**
+6. Authenticate GitHub CLI (if needed): `gh auth login`
+7. Run `make dev` to start both servers
+8. ➜ **[Jump to Verify It Works](#verify-it-works)**
+
+> 💡 **Copilot authenticates automatically** via the VS Code extension.
 
 <a id="path-podman"></a>
 ### Option C — VS Code + Podman
 
 **~15 min | Enterprise/Docker restricted**
 
-#### Step 1 — Install Podman
-
-| Platform | Install Command / Method |
-|----------|-------------------------|
-| **macOS** | `brew install podman` or download from [podman.io](https://podman.io/docs/installation#macos) |
-| **Windows** | Download installer from [podman.io](https://podman.io/docs/installation#windows) or `winget install RedHat.Podman` |
-| **Linux (Fedora/RHEL)** | `sudo dnf install podman` |
-| **Linux (Ubuntu/Debian)** | `sudo apt-get install podman` |
-| **Linux (Arch)** | `sudo pacman -S podman` |
-
-Also install the [Dev Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) extension in VS Code.
-
-#### Step 2 — Initialize and Start Podman
-
-<details>
-<summary><strong>macOS</strong></summary>
-
-```bash
-# Initialize a Podman machine (only needed once)
-podman machine init
-
-# Start the machine
-podman machine start
-
-# Verify it's running
-podman info
-```
-
-> **Apple Silicon (M1/M2/M3/M4):** Podman automatically uses the native `applehv` virtualization. No extra configuration needed.
-
-</details>
-
-<details>
-<summary><strong>Windows</strong></summary>
-
-**Prerequisites:** WSL2 must be enabled. If not already enabled:
-```powershell
-# Run in PowerShell as Administrator
-wsl --install
-
-# Also enable Virtual Machine Platform (if not already)
-dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart
-
-# Restart your machine after these commands
-```
-
-After WSL2 is ready:
-```powershell
-# Initialize a Podman machine (only needed once)
-podman machine init
-
-# Start the machine
-podman machine start
-
-# Verify it's running
-podman info
-```
-
-> **Using WSL2 backend:** Podman on Windows runs inside WSL2. If you encounter permission issues, try running from a WSL2 terminal.
-
-</details>
-
-<details>
-<summary><strong>Linux (Rootless — Recommended)</strong></summary>
-
-```bash
-# Enable and start the Podman socket for your user (rootless)
-systemctl --user enable --now podman.socket
-
-# Verify the socket is running
-systemctl --user status podman.socket
-
-# Find your socket path (you'll need this for VS Code)
-echo "Socket path: /run/user/$(id -u)/podman/podman.sock"
-
-# Verify Podman works
-podman info
-```
-
-> **Note:** Rootless Podman is the recommended mode for most users. It runs containers without root privileges.
-
-</details>
-
-<details>
-<summary><strong>Linux (Root mode — if required by your org)</strong></summary>
-
-```bash
-# Enable and start the system-wide Podman socket
-sudo systemctl enable --now podman.socket
-
-# Verify it's running
-sudo systemctl status podman.socket
-
-# Socket will be at: /run/podman/podman.sock
-```
-
-</details>
-
-#### Step 3 — Configure VS Code for Podman
-
-Open VS Code Settings (`Ctrl+,` or `Cmd+,`) and add these settings:
-
-**All platforms:**
-```json
-{
-  "dev.containers.dockerPath": "podman"
-}
-```
-
-**Linux only (rootless) — also add:**
-```json
-{
-  "dev.containers.dockerSocketPath": "/run/user/<YOUR_UID>/podman/podman.sock"
-}
-```
-> ⚠️ Replace `<YOUR_UID>` with your actual user ID. Find it by running `id -u` in your terminal (commonly `1000` for the first user).
-
-**Linux only (root mode) — also add:**
-```json
-{
-  "dev.containers.dockerSocketPath": "/run/podman/podman.sock"
-}
-```
-
-#### Step 4 — Clone and Open
-
-```bash
-git clone https://github.com/<your-username>/<your-repo-name>.git
-cd <your-repo-name>
-code .
-```
-
-#### Step 5 — Reopen in Container
-
-1. Click **"Reopen in Container"** when prompted  
-   (or press `Ctrl+Shift+P` / `Cmd+Shift+P` → search "Reopen in Container")
-2. Wait for the container build to complete
-
-#### Step 6 — Authenticate
-
-```shell
-gh auth login
-copilot login
-```
-
-➜ **[Jump to Run Your First App](#run-your-first-app)**
-
----
-
-#### Podman Troubleshooting
-
-<details>
-<summary><strong>Container fails to start</strong></summary>
-
-1. Verify Podman is running:
+1. Install Podman for your platform ([installation guide](./docs/podman-setup.md#installation))
+2. Install the [Dev Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) extension
+3. Initialize and start Podman:
    ```bash
-   podman info
+   podman machine init   # macOS/Windows only, one-time
+   podman machine start  # macOS/Windows only
+   podman info           # Verify it works
    ```
-2. Check the socket path matches your VS Code settings
-3. On macOS/Windows, ensure the machine is started:
+4. Configure VS Code — add to settings (`Ctrl+,`):
+   ```json
+   { "dev.containers.dockerPath": "podman" }
+   ```
+   > Linux users: Also set `dockerSocketPath`. See [full Podman setup](./docs/podman-setup.md#configure-vs-code).
+
+5. Clone, open, and reopen in container:
    ```bash
-   podman machine start
+   git clone https://github.com/<your-username>/<your-repo-name>.git
+   cd <your-repo-name> && code .
    ```
+   Then: `Ctrl+Shift+P` → "Reopen in Container"
 
-</details>
+6. Authenticate GitHub CLI: `gh auth login`
+7. Run `make dev` to start both servers
+8. ➜ **[Jump to Verify It Works](#verify-it-works)**
 
-<details>
-<summary><strong>Permission denied errors (Linux)</strong></summary>
-
-For rootless Podman, ensure the socket is enabled for your user:
-```bash
-systemctl --user enable --now podman.socket
-```
-
-If using SELinux, you may need to adjust labels:
-```bash
-# Add :Z suffix for SELinux volume relabeling
-podman run -v ./mydir:/container/path:Z ...
-```
-
-</details>
-
-<details>
-<summary><strong>Podman machine won't start (Windows)</strong></summary>
-
-1. Ensure WSL2 is properly installed and enabled
-2. Check Virtual Machine Platform is enabled:
-   ```powershell
-   # Run as Administrator
-   dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart
-   ```
-3. Restart your machine
-4. Try initializing a fresh machine:
-   ```bash
-   podman machine rm podman-machine-default
-   podman machine init
-   podman machine start
-   ```
-
-</details>
-
-<details>
-<summary><strong>Enterprise proxy or CA certificate issues</strong></summary>
-
-Your organization may require custom CA certificates in the Podman VM.
-
-**macOS/Windows:**
-```bash
-# SSH into the Podman machine
-podman machine ssh
-
-# Add your certificate (inside the VM)
-sudo cp /path/to/your-ca-cert.pem /etc/pki/ca-trust/source/anchors/
-sudo update-ca-trust
-```
-
-**For detailed instructions:** See [Podman CA Certificate Guide](https://github.com/containers/podman/blob/main/docs/tutorials/podman-install-certificate-authority.md)
-
-**Proxy configuration (if behind corporate proxy):**
-```bash
-# Set proxy for Podman machine
-podman machine ssh
-export HTTP_PROXY=http://proxy.example.com:8080
-export HTTPS_PROXY=http://proxy.example.com:8080
-export NO_PROXY=localhost,127.0.0.1
-```
-
-Or add to `~/.config/containers/containers.conf`:
-```ini
-[engine]
-env = ["HTTP_PROXY=http://proxy.example.com:8080", "HTTPS_PROXY=http://proxy.example.com:8080"]
-```
-
-</details>
-
-<details>
-<summary><strong>Using podman-compose (alternative to Docker Compose)</strong></summary>
-
-If your environment doesn't support Docker Compose commands:
-```bash
-# Install podman-compose
-pip install podman-compose
-
-# Or on Fedora/RHEL
-sudo dnf install podman-compose
-
-# Use it like docker-compose
-podman-compose up -d
-```
-
-> **Note:** The Dev Containers extension handles compose automatically when `dockerPath` is set to `podman`.
-
-</details>
+> 💡 **Copilot authenticates automatically** via the VS Code extension.
+>
+> 🔧 **Having issues?** See the [Podman troubleshooting guide](./docs/podman-setup.md#troubleshooting).
 
 <a id="path-manual"></a>
 ### Option D — Manual Setup
 
-If you prefer to install all tools directly on your machine:
+**~15 min | Node.js v24+ already installed**
 
-**Manual path prerequisites:**
+**Prerequisites:** Node.js v24+, Git, GNU Make, VS Code with Copilot extensions
 
-- Node.js **v24+** (includes npm)
-- Git
-- GNU Make (`make`) available in your shell
-- VS Code with GitHub Copilot + Copilot Chat extensions
-- GitHub account with Copilot Business or Enterprise
-
-1. Confirm prerequisites are installed (see [Prerequisites](#prerequisites) above)
-2. Clone your repository:
+1. Clone your forked repository:
    ```bash
    git clone https://github.com/<your-username>/<your-repo-name>.git
    cd <your-repo-name>
    ```
-3. Install dependencies and build:
+2. Install dependencies and build:
    ```bash
-   make install
-   make build
+   make install && make build
    ```
-   If `make` is not available on your machine, use:
-   ```bash
-   cd api && npm install && npm run build
-   cd ../frontend && npm install && npm run build
-   ```
-4. Authenticate:
-   ```shell
-   gh auth login
-   copilot login
-   ```
-5. Continue with [Run Your First App](#run-your-first-app)
+   Or without Make: `cd api && npm install && npm run build && cd ../frontend && npm install && npm run build`
+3. Authenticate GitHub CLI: `gh auth login`
+4. Run `make dev` to start both servers
+5. ➜ **[Jump to Verify It Works](#verify-it-works)**
+
+> 💡 **Copilot authenticates automatically** via the VS Code extension.
 
 ---
-## Run Your First App
 
-### 1. Create Your Repo
+<a id="verify-it-works"></a>
+## ✅ Verify It Works
 
-1. **Fastest:** Click **Fork** and fork this repo to your account (default name is fine)
-2. **If forking is restricted:** click **"Use this template"** to create a new repo
-3. Keep the default repo name or choose your own
-
-> Each of you gets a personal repo for doing Coding Agent labs and GitHub integration exercises.
-
-### 2. Start the Services
-
-Your environment is already set up and dependencies are installed. Open **two terminals**:
-
-**Terminal 1 — API:**
-```bash
-cd api
-npm run dev
-```
-Look for: `Server is running on port 3000`
-
-**Terminal 2 — Frontend:**
-```bash
-cd frontend
-npm run dev
-```
-Look for: `Local: http://localhost:5137/`
-
-### 3. ✅ Success Check
-
-Open these URLs (or click port links in VS Code):
+After running `make dev`, check these URLs:
 
 | What | URL | Expect |
 |------|-----|--------|
-| **API Docs** | http://localhost:3000/api-docs/ | Swagger UI showing endpoints |
 | **Frontend** | http://localhost:5137 | React dashboard with products listed |
+| **API Docs** | http://localhost:3000/api-docs/ | Swagger UI showing endpoints |
 
-**Both load with content?** → 🎉 Ready for the labs!
+**Both load?** → 🎉 You're ready for the labs!
 
----
-## Troubleshooting Setup
+<details>
+<summary><strong>Quick troubleshooting</strong></summary>
 
-| Problem | Quick Fix |
-|---------|-----------|
+| Problem | Fix |
+|---------|-----|
 | Port already in use | `npx kill-port 3000 5137` |
-| Blank API docs page | Add trailing slash: `http://localhost:3000/api-docs/` |
+| Blank API docs page | Add trailing slash: `/api-docs/` |
 | Container stuck | VS Code → **Developer: Reload Window** |
-| Still stuck | **Dev Containers: Rebuild Container** |
 | Can't reach frontend | Check VS Code **Ports** panel for 5137 forwarding |
 
-> More help under [Troubleshooting](#troubleshooting).
-
----
-## Quick Start (5 min)
-
-### 1. Create Your Repo (Fork First)
-
-1. **Recommended (fastest):** Click **Fork** and create a fork under your own account/org.
-2. **Fallback:** If your org blocks forks, use **Code → Use this template → Create a new repository**.
-3. Keep the default name or pick any name, then create the repo.
-
-> **Why fork first?** It is usually one click faster and still gives each attendee a personal repo with push access for Coding Agent PRs, Code Review, and GitHub Advanced Security labs.
-
-### 2. Set Up Your Environment
-
-Choose one of the options from [Choose Your Path](#choose-your-path) above:
-- **Codespaces** — Zero local install (recommended)
-- **Docker Desktop** — Standard Docker
-- **Podman** — Enterprise/restricted Docker environments
-- **Manual Setup** — Direct installation
-
-Once your environment is ready, the dependencies will be automatically installed and the project will be built.
+</details>
 
 ---
 ## The Application
@@ -540,14 +267,15 @@ By the end of the workshop, you'll have created these reusable assets:
 
 | Task | Command |
 |------|--------|
-| Install all deps | `cd api && npm install && cd ../frontend && npm install` |
-| Dev mode (API) | `cd api && npm run dev` |
-| Dev mode (Frontend) | `cd frontend && npm run dev` |
-| Run all tests | `cd api && npm test && cd ../frontend && npm test` |
-| Build both projects | `cd api && npm run build && cd ../frontend && npm run build` |
-| Lint both projects | `cd api && npm run lint && cd ../frontend && npm run lint` |
+| **Start both servers** | `make dev` |
+| Install all deps | `make install` |
+| Build both projects | `make build` |
+| Run all tests | `make test` |
+| Lint both projects | `make lint` |
+| Dev mode (API only) | `make dev-api` |
+| Dev mode (Frontend only) | `make dev-frontend` |
 | Reset database | `cd api && npm run db:migrate && npm run db:seed` |
-| Clean artifacts | Delete `node_modules/` and `dist/` in `api/` and `frontend/` |
+| See all make targets | `make help` |
 
 ---
 
@@ -562,31 +290,15 @@ By the end of the workshop, you'll have created these reusable assets:
 
 ## Troubleshooting
 
-### General Issues
-
 | Problem | Fix |
 |---------|-----|
 | Port 3000 / 5137 in use | `npx kill-port 3000 5137` |
-| npm install fails | Delete `node_modules` in `api/` and `frontend/`, re-run install |
-| Copilot not responding | Check the Copilot extension is signed in and enabled |
+| npm install fails | Delete `node_modules` in `api/` and `frontend/`, re-run `make install` |
+| Copilot not responding | Click the Copilot icon in VS Code status bar → ensure signed in |
 | MCP servers not loading | Restart VS Code, check `.vscode/mcp.json` config |
 | Coding Agent not available | Verify org policy enables Coding Agent |
 | CodeQL not running | Enable GitHub Advanced Security in repo settings *(only needed for Lab 07)* |
-
-### Podman Issues
-
-> For detailed Podman troubleshooting with step-by-step solutions, see the [Podman Troubleshooting section](#podman-troubleshooting) in the setup instructions above.
-
-| Problem | Quick Fix |
-|---------|-----------|
-| **WSL2/Virtual Machine Platform not enabled** (Windows) | Run in **PowerShell as Administrator**: `dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart` then `wsl --install`, restart |
-| **Machine fails to start** (Windows/macOS) | Verify machine is initialized: `podman machine init` then `podman machine start` |
-| **Socket not found** (Linux rootless) | Enable the Podman socket: `systemctl --user enable --now podman.socket` |
-| **Socket not found** (Linux root) | Enable system socket: `sudo systemctl enable --now podman.socket` |
-| **Dev Container fails with Podman** | Verify VS Code setting: `"dev.containers.dockerPath": "podman"`. On Linux rootless, also set `dockerSocketPath` — first run `id -u` to get your UID, then set: `"/run/user/<YOUR_UID>/podman/podman.sock"` |
-| **Permission denied** (Linux) | For rootless, check socket ownership; for SELinux systems, use `:Z` volume suffix |
-| **Corporate proxy issues** | Configure proxy in `~/.config/containers/containers.conf` or inside `podman machine ssh` |
-| **CA certificate errors** | Add custom certs to Podman VM; see [Podman CA Certificate Guide](https://github.com/containers/podman/blob/main/docs/tutorials/podman-install-certificate-authority.md) |
+| **Podman issues** | See [Podman troubleshooting guide](./docs/podman-setup.md#troubleshooting) |
 
 ---
 
