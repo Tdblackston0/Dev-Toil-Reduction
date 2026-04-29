@@ -175,7 +175,7 @@ the current state of the codebase.
 ### Step 10: Test the prompt
 
 Run the prompt file:
-1. Command Palette → **Copilot: Run Prompt File**
+1. Command Palette → **Chat: Run Prompt**
 2. Select `update-all-docs.prompt.md`
 3. Watch Agent Mode regenerate all docs
 

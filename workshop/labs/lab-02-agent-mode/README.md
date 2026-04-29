@@ -73,7 +73,7 @@ This lab includes a ready-to-use prompt file. Open it:
 ### Step 4: Run the prompt
 
 1. In VS Code, open the Command Palette (Ctrl+Shift+P)
-2. Type **"Copilot: Run Prompt File"** and select it
+2. Type **"Chat: Run Prompt"** and select it
 3. Choose `workshop/labs/lab-02-agent-mode/build-order-history.prompt.md`
 4. Agent Mode will start executing — watch the chat panel
 
